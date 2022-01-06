@@ -23,6 +23,8 @@ async function runAction() {
 	const neutralCheckOnWarning = core.getInput("neutral_check_on_warning") === "true";
 	const isPullRequest =
 		context.eventName === "pull_request" || context.eventName === "pull_request_target";
+	const filesToAnnotate = core.getInput("files_to_annotate");
+	const filesToAnnotateList = filesToAnnotate ? filesToAnnotate.split("(?<!\\\\)\\s+") : [];
 
 	// If on a PR from fork: Display messages regarding action limitations
 	if (isPullRequest && context.repository.hasFork) {
@@ -89,6 +91,16 @@ async function runAction() {
 			// Parse output of linting command
 			const lintResult = linter.parseOutput(context.workspace, lintOutput);
 			const summary = getSummary(lintResult);
+
+			let filteredLintResult = lintResult;
+			if (filesToAnnotateList) {
+				filteredLintResult = {
+					warning: lintResult.warning.filter(({ dir }) => filesToAnnotateList.includes(dir)),
+					error: lintResult.error.filter(({ dir }) => filesToAnnotateList.includes(dir)),
+					...lintResult,
+				};
+			}
+
 			core.info(
 				`${linter.name} found ${summary} (${lintResult.isSuccess ? "success" : "failure"})`,
 			);
@@ -110,7 +122,7 @@ async function runAction() {
 				.replace(/\${dir}/g, lintDirRel !== "." ? `${lintDirRel}` : "")
 				.trim();
 
-			checks.push({ lintCheckName, lintResult, summary });
+			checks.push({ lintCheckName, lintResult: filteredLintResult, summary });
 
 			core.endGroup();
 		}

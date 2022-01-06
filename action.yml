@@ -39,6 +39,10 @@ inputs:
     description: Whether the check run should conclude with a neutral status instead of success when the linter finds only warnings
     required: false
     default: "false"
+  files_to_annotate:
+    description: "A space-delimited string of files to annotate. An empty string will annotate all linted files"
+    required: false
+    default: ""
 
   # CSS
 
