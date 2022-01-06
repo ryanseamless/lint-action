@@ -24,7 +24,7 @@ async function runAction() {
 	const isPullRequest =
 		context.eventName === "pull_request" || context.eventName === "pull_request_target";
 	const filesToAnnotate = core.getInput("files_to_annotate");
-	const filesToAnnotateList = filesToAnnotate ? filesToAnnotate.split("(?<!\\\\)\\s+") : [];
+	const filesToAnnotateList = filesToAnnotate ? filesToAnnotate.split(" ") : [];
 
 	// If on a PR from fork: Display messages regarding action limitations
 	if (isPullRequest && context.repository.hasFork) {
@@ -94,10 +94,12 @@ async function runAction() {
 
 			let filteredLintResult = lintResult;
 			if (filesToAnnotateList) {
+				core.info(`Annotating only ${filesToAnnotateList}`);
+				core.info(`On paths like ${lintResult.warning.map(({ path }) => path).slice(0,10)}`);
 				filteredLintResult = {
 					...lintResult,
-					warning: lintResult.warning.filter(({ dir }) => filesToAnnotateList.includes(dir)),
-					error: lintResult.error.filter(({ dir }) => filesToAnnotateList.includes(dir)),
+					warning: lintResult.warning.filter(({ path }) => filesToAnnotateList.includes(path)),
+					error: lintResult.error.filter(({ path }) => filesToAnnotateList.includes(path)),
 				};
 			}
 
