@@ -89,8 +89,8 @@ class RuboCop {
 					const mappedSeverity = severityMap[severity] || "error";
 					lintResult[mappedSeverity].push({
 						path,
-						firstLine: location.start_line ?? location.line,
-						lastLine: location.last_line ?? location.line,
+						firstLine: location.start_line || location.line,
+						lastLine: location.last_line || location.line,
 						message: `${removeTrailingPeriod(message)} (${rule})`,
 					});
 				}
