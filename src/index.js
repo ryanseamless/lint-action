@@ -93,9 +93,9 @@ async function runAction() {
 			const summary = getSummary(lintResult);
 
 			let filteredLintResult = lintResult;
-			if (filesToAnnotateList) {
+			if (filesToAnnotateList.length > 0) {
 				core.info(`Annotating only ${filesToAnnotateList}`);
-				core.info(`On paths like ${lintResult.warning.map(({ path }) => path).slice(0,10)}`);
+				core.info(`On paths like ${lintResult.warning.map(({ path }) => path).slice}`);
 				filteredLintResult = {
 					...lintResult,
 					warning: lintResult.warning.filter(({ path }) => filesToAnnotateList.includes(path)),
