@@ -4206,9 +4206,9 @@ async function runAction() {
 			let filteredLintResult = lintResult;
 			if (filesToAnnotateList) {
 				filteredLintResult = {
+					...lintResult,
 					warning: lintResult.warning.filter(({ dir }) => filesToAnnotateList.includes(dir)),
 					error: lintResult.error.filter(({ dir }) => filesToAnnotateList.includes(dir)),
-					...lintResult,
 				};
 			}
 
