@@ -1,12 +1,7 @@
 {
 	"name": "lint-action",
-	"version": "1.10.0",
+	"version": "2.0.1",
 	"description": "GitHub Action for detecting and fixing linting errors",
-	"author": {
-		"name": "Samuel Meuli",
-		"email": "me@samuelmeuli.com",
-		"url": "https://samuelmeuli.com"
-	},
 	"repository": "github:wearerequired/lint-action",
 	"license": "MIT",
 	"private": true,
@@ -20,23 +15,23 @@
 		"build": "ncc build ./src/index.js"
 	},
 	"dependencies": {
-		"@actions/core": "^1.6.0",
+		"@actions/core": "^1.9.0",
 		"command-exists": "^1.2.9",
-		"parse-diff": "^0.8.1"
+		"parse-diff": "^0.9.0"
 	},
 	"peerDependencies": {},
 	"devDependencies": {
 		"@samuelmeuli/eslint-config": "^6.0.0",
 		"@samuelmeuli/prettier-config": "^2.0.1",
-		"@vercel/ncc": "^0.33.1",
-		"eslint": "8.6.0",
+		"@vercel/ncc": "^0.34.0",
+		"eslint": "8.19.0",
 		"eslint-config-airbnb-base": "15.0.0",
-		"eslint-config-prettier": "^8.3.0",
-		"eslint-plugin-import": "^2.25.4",
-		"eslint-plugin-jsdoc": "^37.5.0",
-		"fs-extra": "^10.0.0",
-		"jest": "^27.4.7",
-		"prettier": "^2.5.1"
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-import": "^2.26.0",
+		"eslint-plugin-jsdoc": "^39.3.3",
+		"fs-extra": "^10.1.0",
+		"jest": "^28.1.2",
+		"prettier": "^2.7.1"
 	},
 	"eslintConfig": {
 		"root": true,
@@ -80,8 +75,9 @@
 		"dist/"
 	],
 	"jest": {
-		"globalSetup": "./test/setup.js",
-		"globalTeardown": "./test/teardown.js"
+		"setupFiles": [
+			"./test/mock-actions-core.js"
+		]
 	},
 	"prettier": "@samuelmeuli/prettier-config"
 }

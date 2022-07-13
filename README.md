@@ -18,6 +18,8 @@ _**Note:** The behavior of actions like this one is currently limited in the con
 
 ## Supported tools
 
+- **C#:**
+  - [dotnet-format](https://github.com/dotnet/format)
 - **CSS:**
   - [stylelint](https://stylelint.io)
 - **Go:**
@@ -30,6 +32,7 @@ _**Note:** The behavior of actions like this one is currently limited in the con
 - **PHP:**
   - [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
 - **Python:**
+  - [Autopep8](https://github.com/hhatto/autopep8)
   - [Black](https://black.readthedocs.io)
   - [Flake8](http://flake8.pycqa.org)
   - [Mypy](https://mypy.readthedocs.io/)
@@ -41,6 +44,8 @@ _**Note:** The behavior of actions like this one is currently limited in the con
   - [swift-format](https://github.com/apple/swift-format) (official)
   - [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) (by Nick Lockwood)
   - [SwiftLint](https://github.com/realm/SwiftLint)
+- **VB.NET:**
+  - [dotnet-format](https://github.com/dotnet/format)
 
 ## Usage
 
@@ -55,9 +60,16 @@ on:
   push:
     branches:
       - main
+  # Replace pull_request with pull_request_target if you
+  # plan to use this action with forks, see the Limitations section
   pull_request:
     branches:
       - main
+
+# Down scope as necessary via https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
+permissions:
+  checks: write
+  contents: write
 
 jobs:
   run-linters:
@@ -71,7 +83,7 @@ jobs:
       # Install your linters here
 
       - name: Run linters
-        uses: wearerequired/lint-action@v1
+        uses: wearerequired/lint-action@v2
         with:
           # Enable your linters here
 ```
@@ -116,7 +128,7 @@ jobs:
         run: npm ci
 
       - name: Run linters
-        uses: wearerequired/lint-action@v1
+        uses: wearerequired/lint-action@v2
         with:
           eslint: true
           prettier: true
@@ -156,7 +168,7 @@ jobs:
           tools: phpcs
 
       - name: Run linters
-        uses: wearerequired/lint-action@v1
+        uses: wearerequired/lint-action@v2
         with:
           php_codesniffer: true
           # Optional: Ignore warnings
@@ -200,7 +212,7 @@ jobs:
           echo "${PWD}/vendor/bin" >> $GITHUB_PATH
 
       - name: Run linters
-        uses: wearerequired/lint-action@v1
+        uses: wearerequired/lint-action@v2
         with:
           php_codesniffer: true
 ```
@@ -238,23 +250,103 @@ jobs:
         run: pip install black flake8
 
       - name: Run linters
-        uses: wearerequired/lint-action@v1
+        uses: wearerequired/lint-action@v2
         with:
           black: true
           flake8: true
 ```
 
+### C# and VB.NET example (dotnet_format)
+
+```yml
+name: Lint
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          dotnet_format: true
+```
+
+### AutoFix example
+
+```yml
+name: Lint
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install Python dependencies
+        run: pip install black flake8
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: true
+          black: true
+          black_auto_fix: true
+          flake8: true
+          flake8_auto_fix: false
+```
+
+With `auto_fix` set to `true`, by default the action will try and fix code issues automatically and commit and push them automatically. Here however, `flake8` linter does not support auto-fixing, so setting `flake8_auto_fix` to `false` will prevent any unnecessary warnings.
+
 ## Configuration
 
 ### Linter-specific options
 
-`[linter]` can be one of `black`, `erblint`, `eslint`, `flake8`, `gofmt`, `golint`, `mypy`, `oitnb`, `php_codesniffer`, `prettier`, `rubocop`, `stylelint`, `swift_format_official`, `swift_format_lockwood`, `swiftlint` and `xo`:
+`[linter]` can be one of `autopep8`, `black`, `dotnet_format`, `erblint`, `eslint`, `flake8`, `gofmt`, `golint`, `mypy`, `oitnb`, `php_codesniffer`, `prettier`, `rubocop`, `stylelint`, `swift_format_official`, `swift_format_lockwood`, `swiftlint` and `xo`:
 
 - **`[linter]`:** Enables the linter in your repository. Default: `false`
 - **`[linter]_args`**: Additional arguments to pass to the linter. Example: `eslint_args: "--max-warnings 0"` if ESLint checks should fail even if there are no errors and only warnings. Default: `""`
 - **`[linter]_dir`**: Directory where the linting command should be run. Example: `eslint_dir: server/` if ESLint is installed in the `server` subdirectory. Default: Repository root
 - **`[linter]_extensions`:** Extensions of files to check with the linter. Example: `eslint_extensions: js,ts` to lint JavaScript and TypeScript files with ESLint. Default: Varies by linter, see [`action.yml`](./action.yml)
 - **`[linter]_command_prefix`:** Command prefix to be run before the linter command. Default: `""`.
+- **`[linter]_auto_fix`:** Whether the linter should try to fix code style issues automatically. This option is useful to commit and push changes only for specific linters and not all of them when `auto_fix` option is set. Default: `true` if linter supports auto-fixing, `false` if not.
 
 ### General options
 
@@ -262,11 +354,13 @@ jobs:
 
 - **`continue_on_error`:** Whether the workflow run should also fail when linter failures are detected. Default: `true`
 
-- **`auto_fix`:** Whether linters should try to fix code style issues automatically. If some issues can be fixed, the action will commit and push the changes to the corresponding branch. Default: `false`
+- **`auto_fix`:** Whether linters should try to fix code style issues automatically. If some issues can be fixed, the action will apply the needed changes. Default: `false`
 
   <p align="center">
     <img src="./.github/screenshots/auto-fix.png" alt="Screenshot of auto-fix commit" width="80%" />
   </p>
+
+- **`commit`:** Whether to commit and push the changes made by `auto_fix`. Default: `true`
 
 - **`git_name`**: Username for auto-fix commits. Default: `"Lint Action"`
 
@@ -286,13 +380,15 @@ Some options are not be available for specific linters:
 
 | Linter                | auto-fixing | extensions |
 | --------------------- | :---------: | :--------: |
+| autopep8              |     ✅      |  ❌ (py)   |
 | black                 |     ✅      |     ✅     |
+| dotnet_format         |     ✅      |  ❌ (cs)   |
 | erblint               |     ❌      |  ❌ (erb)  |
 | eslint                |     ✅      |     ✅     |
 | flake8                |     ❌      |     ✅     |
 | gofmt                 |     ✅      |  ❌ (go)   |
 | golint                |     ❌      |  ❌ (go)   |
-| mypy                  |     ✅      |     ✅     |
+| mypy                  |     ❌      |  ❌ (py)   |
 | oitnb                 |     ✅      |     ✅     |
 | php_codesniffer       |     ❌      |     ✅     |
 | prettier              |     ✅      |     ✅     |
@@ -310,9 +406,7 @@ Some options are not be available for specific linters:
 There are currently some limitations as to how this action (or any other action) can be used in the context of `pull_request` events from forks:
 
 - The action doesn't have permission to push auto-fix changes to the fork. This is because the `pull_request` event runs on the upstream repo, where the `github_token` is lacking permissions for the fork. [Source](https://github.community/t5/GitHub-Actions/Can-t-push-to-forked-repository-on-the-original-repository-s/m-p/35916/highlight/true#M2372)
-- The action doesn't have permission to create annotations for commits on forks and can therefore not display linting errors. [Source 1](https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/m-p/33839), [source 2](https://github.com/actions/labeler/issues/12)
-
-For details and comments, please refer to [#13](https://github.com/wearerequired/lint-action/issues/13).
+- The action doesn't have permission to create annotations for commits on forks unless you use the `pull_request_target` event. You can modify the default permissions granted to the `GITHUB_TOKEN` by using the `permissions` key and set the `checks` scope to `write`. See [GitHub documentation](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#permissions) for more.
 
 ### Auto-fixing workflow files
 
